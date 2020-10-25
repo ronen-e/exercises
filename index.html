@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<!--
+Created using JS Bin
+http://jsbin.com
+
+Released under the MIT license: http://jsbin.mit-license.org
+
+Using Code from MDN
+See https://www.mozilla.org/en-US/about/legal/terms/mozilla/
+
+Using modified code from https://github.com/graphql/swapi-graphql
+See https://github.com/graphql/swapi-graphql/blob/master/LICENSE-examples
+
+https://swapi.dev/about
+Star Wars and all associated names are copyright Lucasfilm ltd.
+This project is open source and carries a BSD licence.
+All data has been freely collected from open sources such as Wookiepedia.
+-->
+<meta name="robots" content="noindex">
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <title>JS Bin</title>
+  <link rel="icon" type="image/png" href="/favicon-16x16.png" sizes="16x16">
+  <link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+  <link rel="stylesheet" href="css/style.css">
+</head>
+<body>
+
+  <table id="vehicle-table" class="table table-bordered table-hover table-dark table-responsive-lg">
+    <tbody>
+      <tr scope="row">
+        <td>Vehicle name with the largest diameter sum</td>
+        <td>{{vehicle.name}}</td>
+      </tr>
+      <tr scope="row">
+        <td>Related home planets and their respective diameter</td>
+        <td>{{vehicle.planets}}</td>
+      </tr>
+      <tr scope="row">
+        <td>Related pilot names</td>
+        <td>{{pilots}}</td>
+      </tr>
+    </tbody>
+  </table>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ramda/0.22.1/ramda.min.js"></script>
+  <script src='https://cdn.jsdelivr.net/g/lodash@4(lodash.min.js+lodash.fp.min.js)'></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.js"></script>
+  <script>
+    Vue.config.devtools = false;
+    Vue.config.productionTip = false;
+    var fp = _.noConflict();
+  </script>
+  <script src="./js/cache.js"></script>
+  <script src="./js/apiHelpers.js"></script>
+  <script src="./js/schema.js"></script>
+  <script src="./js/vehicle.js"></script>
+  <script src="./js/index.js"></script>
+</body>
+</html>
+

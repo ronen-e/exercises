@@ -1,0 +1,151 @@
+<!DOCTYPE html>
+<meta name="robots" content="noindex">
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ramda/0.22.1/ramda.min.js"></script>
+  <script src='https://cdn.jsdelivr.net/g/lodash@4(lodash.min.js+lodash.fp.min.js)'></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.js"></script>
+  <script>
+    var fp = _.noConflict();
+    _.construct = (C) => (...args) => new C(...args);
+
+    // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+    async function postData(url = '', data = {}) {
+      // Default options are marked with *
+      const response = await fetch(url, {
+        method: 'POST', // *GET, POST, PUT, DELETE, etc.
+        mode: 'cors', // no-cors, *cors, same-origin
+        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
+        credentials: 'same-origin', // include, *same-origin, omit
+        headers: {
+          'Content-Type': 'application/json'
+          // 'Content-Type': 'application/x-www-form-urlencoded',
+        },
+        redirect: 'follow', // manual, *follow, error
+        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+        body: JSON.stringify(data) // body data type must match "Content-Type" header
+      });
+      return response.json(); // parses JSON response into native JavaScript objects
+    }
+
+  </script>
+<style id="jsbin-css">
+
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+</style>
+</head>
+<body>
+
+  <table id="vehicle-table">
+    <tbody>
+      <tr>
+        <td>Vehicle name with the largest diameter sum</td>
+        <td>{{vehicle.name}}</td>
+      </tr>
+      <tr>
+        <td>Related home planets and their respective diameter</td>
+        <td>{{vehicle.planets}}</td>
+      </tr>
+      <tr>
+        <td>Related pilot names</td>
+        <td>{{pilots}}</td>
+      </tr>
+    </tbody>
+  </table>
+
+<script id="jsbin-javascript">
+console.clear();
+
+// https://github.com/graphql/swapi-graphql
+var url = 'https://swapi-graphql.netlify.app/.netlify/functions/index';
+var query = `query {
+  allVehicles {
+    edges {
+      node {
+        name
+        pilotConnection {
+          edges {
+            node {
+              ...pilotFragment
+            }
+          }
+        }
+      }
+    }
+  }
+}
+
+fragment pilotFragment on Person {
+  name
+  homeworld { name diameter }
+}`;
+
+main();
+
+async function main(){
+  postData(url, { query: query, variables: null })
+  .then(calculate)
+  .catch(console.error)
+
+  const cache = await getCache();
+  console.log('[main] cache', cache)
+}
+
+
+function calculate(res) {
+  var vehicle = fp.chain(res)
+  .get('data.allVehicles.edges')
+  .map(_.construct(VehicleModel))
+  .sortBy('diameterSum')
+  .last()
+  .value()
+
+  VueTable.vehicle = vehicle;
+
+}
+
+class VehicleModel {
+  constructor(v) {
+    this._data = v;
+    this.name = _.get(v, 'node.name');
+
+    this.pilots = fp.chain(v)
+      .get('node.pilotConnection.edges')
+      .map('node')
+      .value()
+
+    this.diameterSum = fp.chain(this.pilots)
+      .map('homeworld.diameter')
+      .filter(_.isNumber)
+      .sum()
+      .value()
+
+  }
+
+  get planets(){
+    return _.map(this.pilots, 'homeworld')
+  }
+}
+
+var VueTable = new Vue({
+  el: '#vehicle-table',
+  data: {
+    vehicle: {}
+  },
+  computed: {
+    pilots() {
+      return _.map(this.vehicle.pilots, 'name')
+    }
+  }
+});
+
+
+</script>
+</body>
+</html>

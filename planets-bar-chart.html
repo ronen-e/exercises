@@ -1,0 +1,207 @@
+<!DOCTYPE html>
+<!--
+Created using JS Bin
+http://jsbin.com
+
+Released under the MIT license: http://jsbin.mit-license.org
+-->
+<meta name="robots" content="noindex">
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ramda/0.22.1/ramda.min.js"></script>
+  <script src='https://cdn.jsdelivr.net/g/lodash@4(lodash.min.js+lodash.fp.min.js)'></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.js"></script>
+  <script>
+    var fp = _.noConflict()
+  </script>
+<style id="jsbin-css">
+html,
+body {
+  font-family: Consolas, monaco, monospace;
+}
+
+#chart, #vue-chart {
+  padding: 20px;
+}
+
+table {
+  width: 100%;
+  height: 600px;
+}
+
+.charttitle {
+  text-align: center;
+}
+
+.bars td {
+  vertical-align: bottom;
+  height: 400px;
+  text-align: center
+}
+
+.bars div:hover {
+  opacity: 0.6;
+}
+
+
+/*Flat UI colors*/
+
+.one {
+  background: #16A085;
+}
+
+.two {
+  background: #2ECC71;
+}
+
+.three {
+  background: #27AE60;
+}
+
+.four {
+  background: #3498DB;
+}
+
+.five {
+  background: #2980B9;
+}
+
+.six {
+  background: #9B59B6;
+}
+
+.seven {
+  background: #8E44AD;
+}
+
+.eight {
+  background: #34495E;
+}
+
+.nine {
+  background: #2C3E50;
+}
+
+.ten {
+  background: #22313f;
+}
+
+.eleven {
+  background: #F1C40F;
+}
+
+.twelve {
+  background: #F39C12;
+}
+
+.thirteen {
+  background: #E67E22;
+}
+
+.fourteen {
+  background: #D35400;
+}
+
+.fifteen {
+  background: #E74C3C;
+}
+
+.sixteen {
+  background: #C0392B;
+}
+
+.seventeen {
+  background: #ECF0F1;
+}
+
+.seventeen.clouds {
+  color: #BDC3C7;
+}
+
+.eighteen {
+  background: #BDC3C7;
+}
+
+.nineteen {
+  background: #95A5A6;
+}
+
+.twenty {
+  background: #7F8C8D;
+}
+</style>
+</head>
+<body>
+  <div id="chart">
+    <p class="charttitle">{{title}}</p>
+    <div>
+    <table>
+      <tbody>
+        <tr>
+        </tr>
+        <tr class="bars">
+          <td
+              style="{'width': (100/data.length) + '%'}"
+              v-for="(bar, index) in data"
+              :key="index">
+            <span>{{bar.value}}%</span>
+            <div :class="toWord(index+1)" :style="{'height': bar.value + '%'}">
+            </div>
+            <p class="">{{bar.name}}</p>
+          </td>
+        </tr>
+        <tr></tr>
+      </tbody>
+    </table>
+    </div>
+  </div>
+<script id="jsbin-javascript">
+console.clear();
+
+//chart data
+var chartjson = {
+  "title": "Planet Population Satisfaction",
+  "data": [{
+    "name": "Tatooine",
+    "value": 77
+  }, {
+    "name": "Alderaan",
+    "value": 100
+  }, {
+    "name": "Naboo",
+    "value": 94
+  }, {
+    "name": "Bespin",
+    "value": 48
+  }, {
+    "name": "Yavin",
+    "value": 33
+  },{
+    "name": "Hoth",
+    "value": 1
+  }],
+  "xtitle": "Planet",
+  "ytitle": "Satisfaction",
+  "ymax": 100,
+  "ykey": 'score',
+  "xkey": "name",
+  "prefix": "%"
+}
+
+//chart colors
+var colors = ['one', 'two', 'three', 'four', 'five', 'six', 'seven', 'eight', 'nine', 'ten', 'eleven', 'twelve', 'thirteen', 'fourteen'];
+
+var VueChart = new Vue({
+  el: '#chart',
+  data: _.cloneDeep(chartjson),
+  methods: {
+    toWord: (n) => colors[n]
+  }
+});
+
+</script>
+</body>
+</html>

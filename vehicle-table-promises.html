@@ -1,0 +1,190 @@
+<!DOCTYPE html>
+<meta name="robots" content="noindex">
+<html>
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width">
+  <title>JS Bin</title>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/ramda/0.22.1/ramda.min.js"></script>
+  <script src='https://cdn.jsdelivr.net/g/lodash@4(lodash.min.js+lodash.fp.min.js)'></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.js"></script>
+  <script>
+    Vue.config.devtools = false;
+    Vue.config.productionTip = false;
+    const fp = _.noConflict();
+    const cache = {};
+    const mapAndPick = R.compose(fp.map, fp.pick);
+    const mapIndexed = R.addIndex(R.map);
+  </script>
+<style id="jsbin-css">
+
+table, th, td {
+  border: 1px solid black;
+  border-collapse: collapse;
+}
+</style>
+</head>
+<body>
+
+  <table id="vehicle-table">
+    <tbody>
+      <tr>
+        <td>Vehicle name with the largest diameter sum</td>
+        <td>{{vehicle.name}}</td>
+      </tr>
+      <tr>
+        <td>Related home planets and their respective diameter</td>
+        <td>{{vehicle.planets}}</td>
+      </tr>
+      <tr>
+        <td>Related pilot names</td>
+        <td>{{pilots}}</td>
+      </tr>
+    </tbody>
+  </table>
+
+<script id="jsbin-javascript">
+console.clear();
+// noprotect
+main();
+
+function main(){
+  getVehicles()
+    .then(calculate)
+    .then(render)
+    .catch(console.error)
+}
+
+function replaceHttp(url) {
+  return url.replace(/http:\/\//g, 'https://');
+}
+
+function normalizeUrl(url) {
+  return replaceHttp(new URL(url).toString());
+}
+
+function cacheResource(name){
+  let url = `https://swapi.dev/api/${name}/`;
+
+  return _get(url);
+
+  function _get(url){
+    if (url === null) return Promise.resolve(cache)
+
+    return getResource(url)
+      .then(data => {
+        _.forEach(data.results, obj => cache[normalizeUrl(obj.url)] = obj)
+        return data.next ? replaceHttp(data.next) : null;
+      })
+      .then(_get)
+  }
+}
+
+function getResources(items) {
+  return Promise.all(items.map(getResource))
+}
+
+async function getResource(url){
+  url = normalizeUrl(url);
+
+  if (!cache.hasOwnProperty(url)) {
+    cache[url] = fetch(url).then(res => res.json())
+  }
+
+  return cache[url]
+}
+
+function getPlanets(pilots) {
+  const urls = _.map(pilots,'homeworld')
+
+  return getResources(urls)
+    .then(mapAndPick(['name', 'diameter']))
+    .then(mapIndexed(setPlanet))
+
+  function setPlanet(planet, i) {
+    planet.diameter = Number(planet.diameter) || null;
+    pilots[i].homeworld = planet;
+    return planet
+  }
+}
+
+function getPilots(vehicles) {
+  const res = vehicles.map(setPilots);
+  return Promise.all(res).then(() => vehicles);
+
+  function setPilots(vehicle){
+    return getResources(vehicle.pilots)
+      .then(mapAndPick(['name', 'homeworld']))
+      .then(res => vehicle.pilots = res)
+      .then(getPlanets)
+  }
+}
+
+function getVehicles(){
+  console.time('getVehicles')
+
+  return cacheResource('vehicles')
+    .then(setVehicles)
+    .then(getPilots)
+    .finally(() => console.timeEnd('getVehicles'))
+
+  function setVehicles(res){
+    return Promise.resolve(res)
+      .then(fp.filter('pilots.length'))
+      .then(mapAndPick(['name', 'pilots']))
+  }
+}
+
+function calculate(res) {
+  const vehicle = fp.chain(res)
+  .map(R.construct(VehicleModel))
+  .sortBy('diameterSum')
+  .last()
+  .cloneDeep()
+  .value()
+
+  console.log('res', res)
+  console.log('vehicle', vehicle)
+
+  return vehicle
+}
+
+function render(vehicle) {
+  VueTable.vehicle = vehicle;
+}
+
+class VehicleModel {
+  constructor(v) {
+    this._data = v;
+    this.name = v.name;
+    this.pilots = v.pilots;
+
+    this.diameterSum = fp.chain(this.planets)
+      .filter('name')
+      .map('diameter')
+      .filter(_.isNumber)
+      .sum()
+      .value()
+  }
+
+  get planets(){
+    return _.map(this.pilots, 'homeworld')
+  }
+}
+
+const VueTable = new Vue({
+  el: '#vehicle-table',
+  data: {
+    vehicle: {}
+  },
+  computed: {
+    pilots() {
+      return _.map(this.vehicle.pilots, 'name')
+    }
+  }
+});
+
+</script>
+</body>
+</html>
+
