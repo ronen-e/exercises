@@ -1,0 +1,31 @@
+{
+  "name": "exercises-tkl",
+  "version": "1.0.0",
+  "description": "Below are several exercises inspired by actual coding assignments. The assignments are designed to be implemented within 1-2 hours each.",
+  "main": "index.js",
+  "dependencies": {
+    "eslint": "^7.12.0"
+  },
+  "devDependencies": {
+    "babel-eslint": "^10.1.0",
+    "eslint-config-prettier": "^6.14.0",
+    "eslint-plugin-babel": "^5.3.1",
+    "eslint-plugin-prettier": "^3.1.4",
+    "prettier": "2.1.2"
+  },
+  "scripts": {
+    "lint": "eslint js standalone",
+    "lint:fix": "eslint --fix js standalone",
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/ronen-e/exercises.git"
+  },
+  "author": "ronen-e",
+  "license": "MIT",
+  "bugs": {
+    "url": "https://github.com/ronen-e/exercises/issues"
+  },
+  "homepage": "https://github.com/ronen-e/exercises#readme"
+}

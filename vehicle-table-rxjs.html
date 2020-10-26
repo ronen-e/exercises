@@ -1,216 +1,218 @@
 <!DOCTYPE html>
 
-<meta name="robots" content="noindex">
+<meta name="robots" content="noindex" />
 <html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <title>JS Bin</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ramda/0.22.1/ramda.min.js"></script>
-  <script src='https://cdn.jsdelivr.net/g/lodash@4(lodash.min.js+lodash.fp.min.js)'></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.js"></script>
-  <script src="https://unpkg.com/@reactivex/rxjs@latest/dist/global/rxjs.umd.js"></script>
-  <script>
-    Vue.config.devtools = false;
-    Vue.config.productionTip = false;
-    const fp = _.noConflict();
-    const mapAndPick = R.compose(fp.map, fp.pick);
-    const mapIndexed = R.addIndex(R.map);
-  </script>
-<style id="jsbin-css">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>JS Bin</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ramda/0.22.1/ramda.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/g/lodash@4(lodash.min.js+lodash.fp.min.js)"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.js"></script>
+    <script src="https://unpkg.com/@reactivex/rxjs@latest/dist/global/rxjs.umd.js"></script>
+    <script>
+      Vue.config.devtools = false;
+      Vue.config.productionTip = false;
+      const fp = _.noConflict();
+      const mapAndPick = R.compose(fp.map, fp.pick);
+      const mapIndexed = R.addIndex(R.map);
+    </script>
+    <style id="jsbin-css">
+      table,
+      th,
+      td {
+        border: 1px solid black;
+        border-collapse: collapse;
+      }
+    </style>
+  </head>
+  <body>
+    <table id="vehicle-table">
+      <tbody>
+        <tr>
+          <td>Vehicle name with the largest diameter sum</td>
+          <td>{{vehicle.name}}</td>
+        </tr>
+        <tr>
+          <td>Related home planets and their respective diameter</td>
+          <td>{{vehicle.planets}}</td>
+        </tr>
+        <tr>
+          <td>Related pilot names</td>
+          <td>{{pilots}}</td>
+        </tr>
+      </tbody>
+    </table>
 
-table, th, td {
-  border: 1px solid black;
-  border-collapse: collapse;
-}
-</style>
-</head>
-<body>
+    <script id="jsbin-javascript">
+      console.clear();
+      const rx_list = [];
+      const rx_cache = new Map();
+      const ajax = rxjs.ajax.ajax;
+      const { of, merge, from, zip } = rxjs;
+      const {
+        map,
+        catchError,
+        filter,
+        switchMap,
+        mergeMap,
+        mapTo,
+      } = rxjs.operators;
 
-  <table id="vehicle-table">
-    <tbody>
-      <tr>
-        <td>Vehicle name with the largest diameter sum</td>
-        <td>{{vehicle.name}}</td>
-      </tr>
-      <tr>
-        <td>Related home planets and their respective diameter</td>
-        <td>{{vehicle.planets}}</td>
-      </tr>
-      <tr>
-        <td>Related pilot names</td>
-        <td>{{pilots}}</td>
-      </tr>
-    </tbody>
-  </table>
+      main();
 
-<script id="jsbin-javascript">
-console.clear();
-const rx_list = [];
-const rx_cache = new Map();
-const ajax = rxjs.ajax.ajax;
-const {of, merge, from, zip} = rxjs;
-const {map, catchError, filter, switchMap, mergeMap, mapTo} = rxjs.operators;
+      function main() {
+        console.time("rxjs_fetch");
 
-main();
+        const observer = {
+          next(res) {
+            rx_list.push(res);
+          },
+          error: console.error,
+          complete() {
+            console.timeEnd("rxjs_fetch");
+            sub.unsubscribe();
 
-function main(){
-  console.time('rxjs_fetch');
+            Promise.resolve(rx_list).then(calculate).then(render);
+          },
+        };
 
-  const observer = {
-    next(res) {
-      rx_list.push(res);
-    },
-    error: console.error,
-    complete() {
-      console.timeEnd('rxjs_fetch');
-      sub.unsubscribe();
+        const obs$ = rx_getVehicles("https://swapi.dev/api/vehicles/");
+        const sub = obs$.subscribe(observer);
+      }
 
-      Promise.resolve(rx_list)
-        .then(calculate)
-        .then(render)
-    }
-  };
+      function replaceHttp(url) {
+        return url.replace(/http:\/\//g, "https://");
+      }
 
-  const obs$ = rx_getVehicles('https://swapi.dev/api/vehicles/');
-  const sub = obs$.subscribe(observer);
-}
+      function normalizeUrl(url) {
+        return replaceHttp(new URL(url).toString());
+      }
 
-function replaceHttp(url) {
-  return url.replace(/http:\/\//g, 'https://');
-}
+      function calculate(res) {
+        const vehicles = _.chain(res).map(R.construct(VehicleModel)).value();
 
-function normalizeUrl(url) {
-  return replaceHttp(new URL(url).toString());
-}
+        const vehicle = _.chain(vehicles)
+          .sortBy("diameterSum")
+          .last()
+          .cloneDeep()
+          .value();
 
-function calculate(res) {
-  const vehicles = _.chain(res)
-  .map(R.construct(VehicleModel))
-  .value()
+        console.log("res", res);
+        console.log("vehicles", vehicles);
+        console.log("vehicle", vehicle);
 
-  const vehicle = _.chain(vehicles)
-  .sortBy('diameterSum')
-  .last()
-  .cloneDeep()
-  .value()
+        return vehicle;
+      }
 
-  console.log('res', res)
-  console.log('vehicles', vehicles)
-  console.log('vehicle', vehicle)
+      function render(vehicle) {
+        VueTable.vehicle = vehicle;
+      }
 
-  return vehicle
-}
+      class VehicleModel {
+        constructor(v) {
+          this._data = v;
+          this.name = v.name;
+          this.pilots = v.pilots;
 
-function render(vehicle) {
-  VueTable.vehicle = vehicle;
-}
+          this.diameterSum = fp
+            .chain(this.planets)
+            .filter("name")
+            .map("diameter")
+            .map(_.toNumber)
+            .filter(_.isNumber)
+            .sum()
+            .value();
+        }
 
-class VehicleModel {
-  constructor(v) {
-    this._data = v;
-    this.name = v.name;
-    this.pilots = v.pilots;
+        get planets() {
+          return _.map(this.pilots, "homeworld");
+        }
+      }
 
-    this.diameterSum = fp.chain(this.planets)
-      .filter('name')
-      .map('diameter')
-      .map(_.toNumber)
-      .filter(_.isNumber)
-      .sum()
-      .value()
-  }
+      const VueTable = new Vue({
+        el: "#vehicle-table",
+        data: {
+          vehicle: {},
+        },
+        computed: {
+          pilots() {
+            return _.map(this.vehicle.pilots, "name");
+          },
+        },
+      });
 
-  get planets(){
-    return _.map(this.pilots, 'homeworld')
-  }
-}
+      function getResource(url) {
+        if (!rx_cache.has(url)) {
+          const res = fetch(normalizeUrl(url)).then(res => res.json());
+          rx_cache.set(url, res);
+        }
 
-const VueTable = new Vue({
-  el: '#vehicle-table',
-  data: {
-    vehicle: {}
-  },
-  computed: {
-    pilots() {
-      return _.map(this.vehicle.pilots, 'name')
-    }
-  }
-});
+        return from(rx_cache.get(url));
+      }
 
-function getResource(url){
-  if (!rx_cache.has(url)) {
-    const res = fetch(normalizeUrl(url)).then(res => res.json())
-    rx_cache.set(url, res);
-  }
+      function rx_getVehicles(url) {
+        const obs$ = getResource(url).pipe(
+          mergeMap(rx_getNext),
+          filter(rx_filterVehicles),
+          switchMap(rx_spreadVehicles),
+          mergeMap(rx_getPilots),
+          mergeMap(rx_getPlanets)
+        );
 
-  return from(rx_cache.get(url))
-}
+        return obs$;
+      }
 
-function rx_getVehicles(url){
-  const obs$ = getResource(url).pipe(
-    mergeMap(rx_getNext),
-    filter(rx_filterVehicles),
-    switchMap(rx_spreadVehicles),
-    mergeMap(rx_getPilots),
-    mergeMap(rx_getPlanets)
-  )
+      function rx_getNext(res) {
+        if (res.next) {
+          return getResource(res.next).pipe(
+            mergeMap(res2 => merge(of(res), rx_getNext(res2)))
+          );
+        }
+        return of(res);
+      }
 
-  return obs$
-}
+      function rx_getPilots(vehicle) {
+        const pilots$ = vehicle.pilots.map(url => getResource(url));
 
-function rx_getNext(res) {
-  if (res.next) {
-    return getResource(res.next).pipe(
-      mergeMap((res2) => merge(of(res), rx_getNext(res2) )   )
-    )
-  }
-  return of(res);
-}
+        return zip(...pilots$).pipe(
+          map(mapAndPick(["name", "homeworld"])),
+          map(setPilots),
+          mapTo(vehicle)
+        );
 
-function rx_getPilots(vehicle){
-  const pilots$ = vehicle.pilots.map(url => getResource(url));
+        function setPilots(pilots) {
+          vehicle.pilots = pilots;
+        }
+      }
 
-  return zip(...pilots$).pipe(
-    map(mapAndPick(['name', 'homeworld'])),
-    map(setPilots),
-    mapTo(vehicle)
-  )
+      function rx_getPlanets(vehicle) {
+        const urls = vehicle.pilots.map(p => p.homeworld).map(normalizeUrl);
+        const planets$ = urls.map(url => getResource(url));
 
-  function setPilots(pilots){
-    vehicle.pilots = pilots;
-  }
-}
+        return zip(...planets$).pipe(
+          map(mapAndPick(["name", "diameter"])),
+          map(setPlanet),
+          mapTo(vehicle)
+        );
 
-function rx_getPlanets(vehicle){
-  const urls = vehicle.pilots.map(p => p.homeworld).map(normalizeUrl);
-  const planets$ = urls.map(url => getResource(url));
+        function setPlanet(planets) {
+          vehicle.pilots.forEach((pilot, i) => {
+            pilot.homeworld = planets[i];
+            pilot.homeworld.diameter = Number(pilot.homeworld.diameter) || 0;
+          });
+        }
+      }
 
-  return zip(...planets$).pipe(
-    map(mapAndPick(['name', 'diameter'])),
-    map(setPlanet),
-    mapTo(vehicle)
-  )
+      function rx_filterVehicles(res) {
+        res.results = res.results.filter(vehicle => vehicle.pilots.length > 0);
+        res.results = mapAndPick(["name", "pilots"])(res.results);
+        return res;
+      }
 
-  function setPlanet(planets){
-    vehicle.pilots.forEach((pilot, i) => {
-      pilot.homeworld = planets[i]
-      pilot.homeworld.diameter = Number(pilot.homeworld.diameter) || 0;
-    });
-  }
-}
-
-function rx_filterVehicles(res){
-  res.results = res.results.filter(vehicle => vehicle.pilots.length > 0)
-  res.results = mapAndPick(['name', 'pilots'])(res.results)
-  return res;
-}
-
-function rx_spreadVehicles(res){
-  return from(res.results);
-}
-
-</script>
-</body>
+      function rx_spreadVehicles(res) {
+        return from(res.results);
+      }
+    </script>
+  </body>
 </html>
-

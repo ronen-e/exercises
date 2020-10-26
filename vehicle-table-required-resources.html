@@ -1,185 +1,177 @@
 <!DOCTYPE html>
 
-<meta name="robots" content="noindex">
+<meta name="robots" content="noindex" />
 <html>
-<head>
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width">
-  <title>JS Bin</title>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/ramda/0.22.1/ramda.min.js"></script>
-  <script src='https://cdn.jsdelivr.net/g/lodash@4(lodash.min.js+lodash.fp.min.js)'></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.js"></script>
-  <script>
-    var fp = _.noConflict();
-    _.construct = (C) => (...args) => new C(...args);
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width" />
+    <title>JS Bin</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/ramda/0.22.1/ramda.min.js"></script>
+    <script src="https://cdn.jsdelivr.net/g/lodash@4(lodash.min.js+lodash.fp.min.js)"></script>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/vue/2.6.12/vue.js"></script>
+    <script>
+      var fp = _.noConflict();
+      _.construct = C => (...args) => new C(...args);
 
-    // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
-    async function postData(url = '', data = {}) {
-      // Default options are marked with *
-      return fetch(url, {
-        method: 'POST', // *GET, POST, PUT, DELETE, etc.
-        mode: 'cors', // no-cors, *cors, same-origin
-        cache: 'no-cache', // *default, no-cache, reload, force-cache, only-if-cached
-        credentials: 'same-origin', // include, *same-origin, omit
-        headers: {
-          'Content-Type': 'application/json'
-          // 'Content-Type': 'application/x-www-form-urlencoded',
-        },
-        redirect: 'follow', // manual, *follow, error
-        referrerPolicy: 'no-referrer', // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
-        body: JSON.stringify(data) // body data type must match "Content-Type" header
-      })
-      .then(response => response.json()) // parses JSON response into native JavaScript objects
-    }
-
-    var resources = [
-      'people',
-      'vehicles',
-      'planets',
-    ];
-
-    function replaceHttp(url) {
-      return url.replace(/http:\/\//g, 'https://');
-    }
-
-    function normalizeUrl(url) {
-      return replaceHttp(new URL(url).toString());
-    }
-
-    async function cacheResources() {
-      console.time('fetchOriginal')
-      const cache = {};
-
-      for (const name of resources) {
-        let url = `https://swapi.dev/api/${name}/`;
-
-        while (url != null) {
-          console.error(url);
-          const response = await fetch(url);
-          const text = await response.text();
-
-          const data = JSON.parse(replaceHttp(text));
-
-          cache[normalizeUrl(url)] = data;
-          for (const obj of data.results || []) {
-            cache[normalizeUrl(obj.url)] = obj;
-          }
-
-          url = data.next ? data.next.replace('http:', 'https:') : null;
-        }
+      // https://developer.mozilla.org/en-US/docs/Web/API/Fetch_API/Using_Fetch
+      async function postData(url = "", data = {}) {
+        // Default options are marked with *
+        return fetch(url, {
+          method: "POST", // *GET, POST, PUT, DELETE, etc.
+          mode: "cors", // no-cors, *cors, same-origin
+          cache: "no-cache", // *default, no-cache, reload, force-cache, only-if-cached
+          credentials: "same-origin", // include, *same-origin, omit
+          headers: {
+            "Content-Type": "application/json",
+            // 'Content-Type': 'application/x-www-form-urlencoded',
+          },
+          redirect: "follow", // manual, *follow, error
+          referrerPolicy: "no-referrer", // no-referrer, *no-referrer-when-downgrade, origin, origin-when-cross-origin, same-origin, strict-origin, strict-origin-when-cross-origin, unsafe-url
+          body: JSON.stringify(data), // body data type must match "Content-Type" header
+        }).then(response => response.json()); // parses JSON response into native JavaScript objects
       }
 
-      console.timeEnd('fetchOriginal')
-      console.info('cache', cache);
+      var resources = ["people", "vehicles", "planets"];
 
-      return cache;
-    }
+      function replaceHttp(url) {
+        return url.replace(/http:\/\//g, "https://");
+      }
 
-    function cacheRes(){
-      console.time('fetch')
-      const cache = {};
+      function normalizeUrl(url) {
+        return replaceHttp(new URL(url).toString());
+      }
 
-      const promises = resources.map(cacheResource).filter(Boolean)
-      console.log('promises', promises)
+      async function cacheResources() {
+        console.time("fetchOriginal");
+        const cache = {};
 
-      return Promise.all(promises).then(
-        (res) => {
-          console.timeEnd('fetch')
-          console.log('cache', cache)
-        }
-      )
+        for (const name of resources) {
+          let url = `https://swapi.dev/api/${name}/`;
 
+          while (url != null) {
+            console.error(url);
+            const response = await fetch(url);
+            const text = await response.text();
 
-      function cacheResource(name){
-        let url = `https://swapi.dev/api/${name}/`;
+            const data = JSON.parse(replaceHttp(text));
 
-        return _get(url);
+            cache[normalizeUrl(url)] = data;
+            for (const obj of data.results || []) {
+              cache[normalizeUrl(obj.url)] = obj;
+            }
 
-        function _get(url){
-          if (url === null) return
-
-          return fetch(url)
-            //.then(res => res.text())
-            //.then(text => JSON.parse(replaceHttp(text)))
-            .then(res => res.json())
-            .then(data => {
-              cache[normalizeUrl(url)] = data;
-              for (const obj of data.results || []) {
-                cache[normalizeUrl(obj.url)] = obj;
-              }
-              return data.next ? data.next.replace('http:', 'https:') : null;
-            })
-            .then(_get)
+            url = data.next ? data.next.replace("http:", "https:") : null;
           }
         }
-    }
 
+        console.timeEnd("fetchOriginal");
+        console.info("cache", cache);
 
-    function load(key){
-      try {
-        return JSON.parse(localStorage.getItem(key))
-      } catch(e) {
-
-      }
-    }
-
-    function save(key, data){
-      try {
-        localStorage.setItem(key, JSON.stringify(data));
-        return true;
-      } catch(e){
-        return false
-      }
-    }
-
-    async function getCache(){
-      var key = 'swapicache'
-      var cache = load(key);
-
-      if (!cache) {
-        cache = await cacheResources();
-        save(key, cache);
+        return cache;
       }
 
-      return cache
-    }
+      function cacheRes() {
+        console.time("fetch");
+        const cache = {};
 
-  </script>
-<style id="jsbin-css">
+        const promises = resources.map(cacheResource).filter(Boolean);
+        console.log("promises", promises);
 
-table, th, td {
-  border: 1px solid black;
-  border-collapse: collapse;
-}
-</style>
-</head>
-<body>
+        return Promise.all(promises).then(res => {
+          console.timeEnd("fetch");
+          console.log("cache", cache);
+        });
 
-  <table id="vehicle-table">
-    <tbody>
-      <tr>
-        <td>Vehicle name with the largest diameter sum</td>
-        <td>{{vehicle.name}}</td>
-      </tr>
-      <tr>
-        <td>Related home planets and their respective diameter</td>
-        <td>{{vehicle.planets}}</td>
-      </tr>
-      <tr>
-        <td>Related pilot names</td>
-        <td>{{pilots}}</td>
-      </tr>
-    </tbody>
-  </table>
+        function cacheResource(name) {
+          let url = `https://swapi.dev/api/${name}/`;
 
-<script id="jsbin-javascript">
-console.clear();
-cacheRes();
-// cacheResources();
+          return _get(url);
 
-// https://github.com/graphql/swapi-graphql
-var url = 'https://swapi-graphql.netlify.app/.netlify/functions/index';
-var query = `query {
+          function _get(url) {
+            if (url === null) return;
+
+            return (
+              fetch(url)
+                //.then(res => res.text())
+                //.then(text => JSON.parse(replaceHttp(text)))
+                .then(res => res.json())
+                .then(data => {
+                  cache[normalizeUrl(url)] = data;
+                  for (const obj of data.results || []) {
+                    cache[normalizeUrl(obj.url)] = obj;
+                  }
+                  return data.next
+                    ? data.next.replace("http:", "https:")
+                    : null;
+                })
+                .then(_get)
+            );
+          }
+        }
+      }
+
+      function load(key) {
+        try {
+          return JSON.parse(localStorage.getItem(key));
+        } catch (e) {}
+      }
+
+      function save(key, data) {
+        try {
+          localStorage.setItem(key, JSON.stringify(data));
+          return true;
+        } catch (e) {
+          return false;
+        }
+      }
+
+      async function getCache() {
+        var key = "swapicache";
+        var cache = load(key);
+
+        if (!cache) {
+          cache = await cacheResources();
+          save(key, cache);
+        }
+
+        return cache;
+      }
+    </script>
+    <style id="jsbin-css">
+      table,
+      th,
+      td {
+        border: 1px solid black;
+        border-collapse: collapse;
+      }
+    </style>
+  </head>
+  <body>
+    <table id="vehicle-table">
+      <tbody>
+        <tr>
+          <td>Vehicle name with the largest diameter sum</td>
+          <td>{{vehicle.name}}</td>
+        </tr>
+        <tr>
+          <td>Related home planets and their respective diameter</td>
+          <td>{{vehicle.planets}}</td>
+        </tr>
+        <tr>
+          <td>Related pilot names</td>
+          <td>{{pilots}}</td>
+        </tr>
+      </tbody>
+    </table>
+
+    <script id="jsbin-javascript">
+      console.clear();
+      cacheRes();
+      // cacheResources();
+
+      // https://github.com/graphql/swapi-graphql
+      var url = "https://swapi-graphql.netlify.app/.netlify/functions/index";
+      var query = `query {
   allVehicles {
     edges {
       node {
@@ -201,78 +193,64 @@ fragment pilotFragment on Person {
   homeworld { name diameter }
 }`;
 
-main();
+      main();
 
-async function main(){
-  postData(url, { query: query, variables: null })
-  .then(calculate)
-  .catch(console.error)
+      async function main() {
+        postData(url, { query: query, variables: null })
+          .then(calculate)
+          .catch(console.error);
 
-  const cache = await getCache();
-  console.log('[main] cache', cache)
-}
+        const cache = await getCache();
+        console.log("[main] cache", cache);
+      }
 
+      function calculate(res) {
+        var vehicle = fp
+          .chain(res)
+          .get("data.allVehicles.edges")
+          .map(_.construct(VehicleModel))
+          .sortBy("diameterSum")
+          .last()
+          .value();
 
-function calculate(res) {
-  var vehicle = fp.chain(res)
-  .get('data.allVehicles.edges')
-  .map(_.construct(VehicleModel))
-  .sortBy('diameterSum')
-  .last()
-  .value()
+        VueTable.vehicle = vehicle;
+      }
 
-  VueTable.vehicle = vehicle;
-}
+      class VehicleModel {
+        constructor(v) {
+          this._data = v;
+          this.name = _.get(v, "node.name");
 
-class VehicleModel {
-  constructor(v) {
-    this._data = v;
-    this.name = _.get(v, 'node.name');
+          this.pilots = fp
+            .chain(v)
+            .get("node.pilotConnection.edges")
+            .map("node")
+            .value();
 
-    this.pilots = fp.chain(v)
-      .get('node.pilotConnection.edges')
-      .map('node')
-      .value()
+          this.diameterSum = fp
+            .chain(this.pilots)
+            .map("homeworld.diameter")
+            .filter(_.isNumber)
+            .sum()
+            .value();
+        }
 
-    this.diameterSum = fp.chain(this.pilots)
-      .map('homeworld.diameter')
-      .filter(_.isNumber)
-      .sum()
-      .value()
+        get planets() {
+          return _.map(this.pilots, "homeworld");
+        }
+      }
 
-  }
-
-  get planets(){
-    return _.map(this.pilots, 'homeworld')
-  }
-}
-
-var VueTable = new Vue({
-  el: '#vehicle-table',
-  data: {
-    vehicle: {}
-  },
-  computed: {
-    pilots() {
-      return _.map(this.vehicle.pilots, 'name')
-    }
-  }
-});
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-</script>
-</body>
+      var VueTable = new Vue({
+        el: "#vehicle-table",
+        data: {
+          vehicle: {},
+        },
+        computed: {
+          pilots() {
+            return _.map(this.vehicle.pilots, "name");
+          },
+        },
+      });
+    </script>
+  </body>
 </html>
-

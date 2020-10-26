@@ -4,7 +4,7 @@ const data = [
   { name: "Yoni", course: "Physics", score: 72 },
   { name: "Maria", course: "English", score: 86 },
   { name: "Lars", course: "Math", score: 90 },
-  { name: "David", course: "English", score: 90 }
+  { name: "David", course: "English", score: 90 },
 ];
 
 // Given the data above, calculate the average test score
@@ -12,8 +12,8 @@ const data = [
 const avgscore = () => {
   var avg = new Map();
 
-  data.forEach((item) => avg.set(item.course, new Avg()));
-  data.forEach((item) => avg.get(item.course).add(item.score));
+  data.forEach(item => avg.set(item.course, new Avg()));
+  data.forEach(item => avg.get(item.course).add(item.score));
   avg.forEach((item, key) => avg.set(key, item.value));
 
   return Array.from(avg);
@@ -46,13 +46,13 @@ const avgscore2 = (items, keys = []) => {
   const avg = new Map();
 
   if (keys.length) {
-    items = data.filter((item) => {
+    items = data.filter(item => {
       return keys.includes(item.course);
     });
   }
 
-  items.forEach((item) => avg.set(item.course, new Avg()));
-  items.forEach((item) => avg.get(item.course).add(item.score));
+  items.forEach(item => avg.set(item.course, new Avg()));
+  items.forEach(item => avg.get(item.course).add(item.score));
   avg.forEach((item, key) => avg.set(key, item.value));
 
   return Array.from(avg);

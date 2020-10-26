@@ -6,29 +6,35 @@ The assignments are designed to be implemented within 1-2 hours each.
 ## swapi
 
 1. swapi implementation with graphql wrapper
-	* https://ronen-e.github.io/exercises/vehicle-table.html
+
+   - https://ronen-e.github.io/exercises/vehicle-table.html
 
 1. swapi implementation with graphql wrapper.
-This is basically the same as `vehicle-table.html` but downloads only the data required for the exercise.
-	* https://ronen-e.github.io/exercises/vehicle-table-required-resources.html
+   This is basically the same as `vehicle-table.html` but downloads only the data required for the exercise.
+
+	 - https://ronen-e.github.io/exercises/vehicle-table-required-resources.html
 
 1. without swapi-graphql - with a custom graphql-like interface for fetching data
-	* https://ronen-e.github.io/exercises/index.html
+
+   - https://ronen-e.github.io/exercises/index.html
 
 1. promise based data fetch implemenation specific for this exercise which follows the following guidelines:
-	1. fetch all vehicles
-	1. filter out all vehicles without pilots
-	1. fetch pilots for each vehicles
-	1. fetch homeworld for each pilot
-	* Requests for a resource are cached in memory
-	* This implementation is faster than the others due to fetching just the minimal amount of resources
-	* https://ronen-e.github.io/exercises/vehicle-table-promises.html
+
+   1. fetch all vehicles
+   1. filter out all vehicles without pilots
+   1. fetch pilots for each vehicles
+   1. fetch homeworld for each pilot
+
+   - Requests for a resource are cached in memory
+   - This implementation is faster than the others due to fetching just the minimal amount of resources
+   - https://ronen-e.github.io/exercises/vehicle-table-promises.html
 
 1. RxJS based implementation. This follows the same guidelines as the Promise based implementation.
-	* https://ronen-e.github.io/exercises/vehicle-table-rxjs.html
+
+   - https://ronen-e.github.io/exercises/vehicle-table-rxjs.html
 
 1. Bar chart with vanilla javascript
-	* https://ronen-e.github.io/exercises/planets-bar-chart.html
+   - https://ronen-e.github.io/exercises/planets-bar-chart.html
 
 ## Design
 
@@ -47,6 +53,7 @@ Remember. These solutions are quick and dirty solutions. They are not meant to b
 ## Goal
 
 Display a table containing information for the vehicle with the highest diameter sum of the pilots homeworld.
+
 - There are many vehicles (`vehicles` resource)
 - A vehicle can have multiple pilots (`people` resource)
 - Each pilot has a single homeworld (`planets` resource)
@@ -65,6 +72,7 @@ A: Planets are deduped by name. I didn't notice such cases. But it is still poss
 1. There are multiple resources (Planets, Spaceships, Vehicles, People, Films and Species)
 
 The purpose is to transform json response like this:
+
 ```json
 	"https://swapi.dev/api/vehicles/14/": {
 		"name": "Snowspeeder",
@@ -199,6 +207,7 @@ The purpose is to transform json response like this:
 ```
 
 Into this:
+
 ```json
 {
   "name": "Snowspeeder",
@@ -221,15 +230,15 @@ Into this:
 }
 ```
 
-Once we have this object it is easy to calculate the total diameter sum (*10465+11000* in the example).
+Once we have this object it is easy to calculate the total diameter sum (_10465+11000_ in the example).
 
 ## How it works
 
 These are the main components:
 
-1. Caching (`cache.js`) - Download all the api data locally for all resources  and save it to local storage. This requires multiple API requests to SWAPI in order to obtain the data.
-  1. If `debug mode` (see below) is enabled then the data is fetched directly from the local file `data.json`.
-  1. The cache interface is asynchronous - it returns a promise which resolves with the requested resource. The promise only resolves after the cache is filled
+1. Caching (`cache.js`) - Download all the api data locally for all resources and save it to local storage. This requires multiple API requests to SWAPI in order to obtain the data.
+1. If `debug mode` (see below) is enabled then the data is fetched directly from the local file `data.json`.
+1. The cache interface is asynchronous - it returns a promise which resolves with the requested resource. The promise only resolves after the cache is filled
 1. Api Helpers (`apiHelpers.js`) - responsible for interacting with SWAPI
 1. Schema building (`schema.js`) - The schema describes the structure of the requested resource and child resources and the fields for each resource. The file contains the code responsible for parsing the schema and converting it to a JavaScript object
 1. Rendering - (`index.js`) - Renders the data using Vue.js. See the `main()` function for the application entry point.
@@ -243,6 +252,7 @@ I know, It's bad. But it's a really small DB (~400KB) and it's an exercise and i
 To enable debug mode set the query string of the page to include the text "debug"
 
 example:
+
 ```
 /?debug=1
 ```

@@ -8,7 +8,7 @@
  */
 
 function getIdFromUrl(url) {
-  return parseInt(url.split('/')[5], 10);
+  return parseInt(url.split("/")[5], 10);
 }
 
 /**
@@ -22,7 +22,7 @@ function objectWithId(obj) {
 /**
  * Given an object URL, fetch it, append the ID to it, and return it.
  */
-async function getObjectFromUrl(url){
+async function getObjectFromUrl(url) {
   const { localUrlLoader } = SwapiCache;
   const data = await localUrlLoader.load(url);
   return objectWithId(data);
@@ -36,10 +36,9 @@ async function getObjectsFromUrls(urls) {
 /**
  * Given a type and ID, get the object with the ID.
  */
-async function getObjectFromTypeAndId(type,id) {
+async function getObjectFromTypeAndId(type, id) {
   return await getObjectFromUrl(`https://swapi.dev/api/${type}/${id}/`);
 }
-
 
 /**
  * Given a type, fetch all of the pages, and join the objects together
@@ -65,11 +64,11 @@ function sortObjectsById(array) {
  * Given a string, convert it to a number
  */
 function convertToNumber(value) {
-  if (['unknown', 'n/a'].indexOf(value) !== -1) {
+  if (["unknown", "n/a"].indexOf(value) !== -1) {
     return null;
   }
   // remove digit grouping
-  const numberString = value.replace(/,/, '');
+  const numberString = value.replace(/,/, "");
   return Number(numberString);
 }
 
@@ -81,5 +80,5 @@ const Api = {
   sortObjectsById,
   getObjectsByType,
   objectWithId,
-  getIdFromUrl
-}
+  getIdFromUrl,
+};

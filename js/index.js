@@ -1,38 +1,37 @@
-let debugMode = window.location.search.includes('debug');
+let debugMode = window.location.search.includes("debug");
 
 main();
 
-function main(){
-  getData().then(render)
+function main() {
+  getData().then(render);
 }
 
-function getData(){
-  return Schema.compose()
+function getData() {
+  return Schema.compose();
 }
 
 function render(res) {
-
   var vehicle = _.chain(res)
     .map(R.construct(VehicleModel))
-    .sortBy('diameterSum')
+    .sortBy("diameterSum")
     .last()
     .cloneDeep()
-    .value()
+    .value();
 
-  console.log('[render] result', res)
-  console.log('[render] vehicle', vehicle);
+  console.log("[render] result", res);
+  console.log("[render] vehicle", vehicle);
 
   VueTable.vehicle = vehicle;
 }
 
 var VueTable = new Vue({
-  el: '#vehicle-table',
+  el: "#vehicle-table",
   data: {
-    vehicle: {}
+    vehicle: {},
   },
   computed: {
     pilots() {
-      return _.map(this.vehicle.pilots, 'name')
-    }
-  }
+      return _.map(this.vehicle.pilots, "name");
+    },
+  },
 });
