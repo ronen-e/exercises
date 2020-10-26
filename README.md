@@ -3,7 +3,9 @@
 Below are several exercises inspired by actual coding assignments.
 The assignments are designed to be implemented within 1-2 hours each.
 
-## swapi
+# swapi
+
+The **swapi** (Star Wars API) exercise (see description below) was created in several versions:
 
 1. swapi implementation with graphql wrapper
 
@@ -12,7 +14,7 @@ The assignments are designed to be implemented within 1-2 hours each.
 1. swapi implementation with graphql wrapper.
    This is basically the same as `vehicle-table.html` but downloads only the data required for the exercise.
 
-	 - https://ronen-e.github.io/exercises/vehicle-table-required-resources.html
+   - https://ronen-e.github.io/exercises/vehicle-table-required-resources.html
 
 1. without swapi-graphql - with a custom graphql-like interface for fetching data
 
@@ -31,6 +33,7 @@ The assignments are designed to be implemented within 1-2 hours each.
 
 1. RxJS based implementation. This follows the same guidelines as the Promise based implementation.
 
+   - This implementation "spits" out single objects each time
    - https://ronen-e.github.io/exercises/vehicle-table-rxjs.html
 
 1. Bar chart with vanilla javascript
@@ -40,9 +43,9 @@ The assignments are designed to be implemented within 1-2 hours each.
 
 The main exercise is designed to test handling multiple asynchronous requests for remote servers (in this case - https://swapi.dev/ API)
 
-One solution uses the (see `vehicle-table.html`) uses a graphql wrapper by https://github.com/graphql/swapi-graphql)
+One solution - `vehicle-table.html` uses a graphql wrapper library (https://github.com/graphql/swapi-graphql)
 
-The second solution (`index.html`) uses some of the same code to implement a similar solution in the client side.
+The second solution (`index.html`) uses some of the same code to implement a similar solution.
 
 The third solution (`vehicle-table-promises.html`) uses just regular plain vanilla JS promises
 
@@ -67,7 +70,7 @@ A: Planets are deduped by name. I didn't notice such cases. But it is still poss
 
 ## Problem
 
-1. Swapi resources can be linked to other resources. The links are represented as Urls to that resource.
+1. Swapi resources can link to other resources. The links are represented as Urls to that resource.
 1. Resources are paginated. So when trying to get all `vehicles` we would receive a partial list and the url for the next "page"
 1. There are multiple resources (Planets, Spaceships, Vehicles, People, Films and Species)
 
@@ -234,18 +237,21 @@ Once we have this object it is easy to calculate the total diameter sum (_10465+
 
 ## How it works
 
+The following applies to the main page `index.html`.
 These are the main components:
 
 1. Caching (`cache.js`) - Download all the api data locally for all resources and save it to local storage. This requires multiple API requests to SWAPI in order to obtain the data.
-1. If `debug mode` (see below) is enabled then the data is fetched directly from the local file `data.json`.
-1. The cache interface is asynchronous - it returns a promise which resolves with the requested resource. The promise only resolves after the cache is filled
+   - If `debug mode` (see below) is enabled then the data is fetched directly from the local file `data.json`.
+   - The cache interface is asynchronous - it returns a promise which resolves with the requested resource. The promise only resolves after the cache is filled
 1. Api Helpers (`apiHelpers.js`) - responsible for interacting with SWAPI
-1. Schema building (`schema.js`) - The schema describes the structure of the requested resource and child resources and the fields for each resource. The file contains the code responsible for parsing the schema and converting it to a JavaScript object
-1. Rendering - (`index.js`) - Renders the data using Vue.js. See the `main()` function for the application entry point.
+1. Schema building (`schema.js`) - The schema describes the structure of the requested resource and child resources as well as the fields for each resource. The file contains the code responsible for parsing the schema and converting it to a JavaScript object
+1. Rendering - (`index.js`) - Renders the data using Vue.js. See the `main()` function for the entry point.
 
 ### Download the whole Data set ? Seriously ?
 
 I know, It's bad. But it's a really small DB (~400KB) and it's an exercise and it's an unusual way of solving the exercise.
+
+In addition, This only applies to certain solutions. The Promise/RxJS solutions only fetch the required resources.
 
 ## debug mode
 
@@ -268,3 +274,8 @@ Another exercise is creating a bar chart using vanilla JS only (no chart librari
 # Standalone
 
 The `standalone` folder contains single JS exercises and solutions
+
+- **max.js** - Implement a curried version of `Math.max`.
+- **pure.js** - Convert a function with side effects to a pure function.
+- **scores.js** - Calculate group average.
+- **bubblesort.js** - Bubblesort algorithm.
