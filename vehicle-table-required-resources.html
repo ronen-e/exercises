@@ -228,8 +228,9 @@ fragment pilotFragment on Person {
             .value();
 
           this.diameterSum = fp
-            .chain(this.pilots)
-            .map("homeworld.diameter")
+            .chain(this.planets)
+            .uniqBy("name")
+            .map("diameter")
             .filter(_.isNumber)
             .sum()
             .value();

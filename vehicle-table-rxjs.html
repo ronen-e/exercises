@@ -117,7 +117,7 @@
 
           this.diameterSum = fp
             .chain(this.planets)
-            .filter("name")
+            .uniqBy("name")
             .map("diameter")
             .map(_.toNumber)
             .filter(_.isNumber)
